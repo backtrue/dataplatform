@@ -54,9 +54,9 @@
             </div>
 
             <!-- 三成本五指標概覽 -->
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-semibold mb-4">三成本五指標概覽</h2>
-                <div id="overviewMetrics" class="grid grid-cols-3 gap-4"></div>
+            <div class="bg-white p-6 rounded-lg shadow col-span-full">
+                <h2 class="text-xl font-semibold mb-6">三成本五指標概覽</h2>
+                <div id="overviewMetrics" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
             </div>
 
             <!-- 廣告效益 -->
@@ -149,33 +149,90 @@
             return formatNumber(number) + '%';
         }
 
-        function renderMetric(container, label, value, formatter = formatNumber, color = 'bg-white') {
-            const div = document.createElement('div');
-            div.className =
-                `rounded-lg shadow-md p-3 flex flex-col items-center justify-center transition-transform duration-200 hover:scale-105 ${color}`;
-            let displayValue;
+        function renderMetric(container, label, value, formatter = formatNumber, textColor = 'text-gray-800', bgColor = 'bg-white') {
+            const card = document.createElement('div');
+            card.className = 'p-4 rounded-lg border border-gray-100 hover:shadow-md transition-shadow duration-200';
+            
+            const iconHtml = getMetricIcon(label, textColor, bgColor);
+            
+            let displayValue = '0';
             if (typeof value === 'string') {
                 value = parseFloat(value);
             }
-            if (typeof value !== 'number' || isNaN(value)) {
-                displayValue = '0';
-            } else {
-                displayValue = formatter(value);
+            if (typeof value === 'number' && !isNaN(value)) {
+                displayValue = formatter ? formatter(value) : value;
             }
-
-            // 根據數字長度動態調整字體大小
-            let fontSizeClass = 'text-2xl';
-            if (displayValue.length > 7) {
-                fontSizeClass = 'text-lg';
-            } else if (displayValue.length > 5) {
-                fontSizeClass = 'text-xl';
-            }
-
-            div.innerHTML = `
-            <span class="text-gray-500 text-sm mb-1 tracking-wide">${label}</span>
-            <span class="font-bold ${fontSizeClass} text-gray-800">${displayValue}</span>
-        `;
-            container.appendChild(div);
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-sm font-medium text-gray-500">${label}</span>
+                    ${iconHtml}
+                </div>
+                <div class="text-2xl font-bold ${textColor}">${displayValue}</div>
+                <div class="mt-1 text-xs text-gray-400">
+                    較上期 <span class="text-green-500">-</span>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+        
+        function getMetricIcon(metricName, textColor, bgColor) {
+            const icons = {
+                '總收益': `
+                    <div class="p-2 rounded-lg ${bgColor} ${textColor.replace('text-', 'text-opacity-20 ')} ">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.564-.648-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+                        </svg>
+                    </div>`,
+                '流量': `
+                    <div class="p-2 rounded-lg ${bgColor} ${textColor.replace('text-', 'text-opacity-20 ')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+                        </svg>
+                    </div>`,
+                '轉換率': `
+                    <div class="p-2 rounded-lg ${bgColor} ${textColor.replace('text-', 'text-opacity-20 ')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    </div>`,
+                '平均購買收益': `
+                    <div class="p-2 rounded-lg ${bgColor} ${textColor.replace('text-', 'text-opacity-20 ')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.564-.648-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+                        </svg>
+                    </div>`,
+                '訂單獲取成本': `
+                    <div class="p-2 rounded-lg ${bgColor} ${textColor.replace('text-', 'text-opacity-20 ')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.564-.648-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+                        </svg>
+                    </div>`,
+                '名單獲取成本': `
+                    <div class="p-2 rounded-lg ${bgColor} ${textColor.replace('text-', 'text-opacity-20 ')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                        </svg>
+                    </div>`,
+                '流量獲取成本': `
+                    <div class="p-2 rounded-lg ${bgColor} ${textColor.replace('text-', 'text-opacity-20 ')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6.5 6.326a6.52 6.52 0 01-1.5.174 6.487 6.487 0 01-5.011-2.36l.49-.816a4.015 4.015 0 003.521-1.989 4 4 0 00-.322-4.123 4.004 4.004 0 00-3.847 2.677 4.02 4.02 0 00.922 4.16l-.84.566a6.52 6.52 0 01-1.04-4.091 6.5 6.5 0 011.5-4.18 6.5 6.5 0 019.9 7.13l-.84-.564z" clip-rule="evenodd" />
+                        </svg>
+                    </div>`,
+                '總曝光': `
+                    <div class="p-2 rounded-lg ${bgColor} ${textColor.replace('text-', 'text-opacity-20 ')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>`
+            };
+            
+            return icons[metricName] || '';
         }
 
         function updateDashboard() {
@@ -197,17 +254,30 @@
                     // 渲染三成本五指標
                     const overview = document.getElementById('overviewMetrics');
                     overview.innerHTML = '';
-                    renderMetric(overview, '總收益', data.overview.total_revenue || 0, formatCurrency, 'bg-blue-50');
-                    renderMetric(overview, '流量', data.overview.traffic || 0, formatNumber, 'bg-green-50');
-                    renderMetric(overview, '轉換率', data.overview.conversion_rate || 0, formatPercentage, 'bg-yellow-50');
-                    renderMetric(overview, '平均購買收益', data.overview.avg_order_value || 0, formatCurrency,
-                    'bg-purple-50');
-                    renderMetric(overview, '訂單獲取成本', data.overview.cost_per_acquisition || 0, formatCurrency,
-                        'bg-pink-50');
-                    renderMetric(overview, '名單獲取成本', data.overview.cost_per_lead || 0, formatCurrency, 'bg-indigo-50');
-                    renderMetric(overview, '流量獲取成本', data.overview.cost_per_traffic || 0, formatCurrency,
-                        'bg-orange-50');
-                    renderMetric(overview, '總曝光', data.overview.impressions || 0, formatNumber, 'bg-gray-50');
+                    
+                    // 確保數據存在，避免 undefined 錯誤
+                    const overviewData = data.overview || {};
+                    // 使用解構賦值簡化代碼
+                    const {
+                        total_revenue = 0,
+                        traffic = 0,
+                        conversion_rate = 0,
+                        avg_order_value = 0,
+                        cost_per_acquisition = 0,
+                        cost_per_lead = 0,
+                        cost_per_traffic = 0,
+                        impressions = 0
+                    } = overviewData;
+                    
+                    // 渲染指標卡片
+                    renderMetric(overview, '總收益', total_revenue, formatCurrency, 'text-blue-600', 'bg-blue-50');
+                    renderMetric(overview, '流量', traffic, formatNumber, 'text-green-600', 'bg-green-50');
+                    renderMetric(overview, '轉換率', conversion_rate, formatPercentage, 'text-yellow-600', 'bg-yellow-50');
+                    renderMetric(overview, '平均購買收益', avg_order_value, formatCurrency, 'text-purple-600', 'bg-purple-50');
+                    renderMetric(overview, '訂單獲取成本', cost_per_acquisition, formatCurrency, 'text-pink-600', 'bg-pink-50');
+                    renderMetric(overview, '名單獲取成本', cost_per_lead, formatCurrency, 'text-indigo-600', 'bg-indigo-50');
+                    renderMetric(overview, '流量獲取成本', cost_per_traffic, formatCurrency, 'text-orange-600', 'bg-orange-50');
+                    renderMetric(overview, '總曝光', impressions, formatNumber, 'text-gray-600', 'bg-gray-50');
 
                     // 渲染廣告效益
                     const advertising = document.getElementById('advertisingMetrics');
